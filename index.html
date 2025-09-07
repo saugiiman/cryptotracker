@@ -1,553 +1,197 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <title>Live Crypto Price Tracker — BTC, ETH, DOGE | trackyourcrypto.vercel.app</title>
-  <meta name="description" content="Live cryptocurrency prices in INR & global currencies. Track Bitcoin, Ethereum, Dogecoin & 100+ coins with realtime charts. Support the project via secure UPI QR." />
-  <meta name="keywords" content="crypto tracker, bitcoin price inr, ethereum price, live crypto price, crypto chart, BTC to INR, ETH to INR, crypto india" />
-  <meta name="author" content="Crypto Tracker Hub" />
-
-  <!-- Open Graph / Twitter -->
-  <meta property="og:site_name" content="Crypto Tracker Hub" />
-  <meta property="og:title" content="Live Crypto Price Tracker — BTC, ETH, DOGE" />
-  <meta property="og:description" content="Track live crypto prices in INR & global currencies. Realtime charts for Bitcoin, Ethereum and more." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Crypto Price Tracker in INR | Bitcoin, Ethereum & More</title>
+  <meta name="description" content="Track live cryptocurrency prices in INR & all currencies. Real-time charts for Bitcoin, Ethereum, Dogecoin & 2000+ coins. Free crypto tracker with donation support." />
+  <meta name="keywords" content="crypto price tracker, bitcoin live price in INR, ethereum price, live cryptocurrency prices, best crypto tracker India, real-time crypto charts, BTC to INR, ETH to INR" />
+  <meta property="og:title" content="Live Crypto Price Tracker" />
+  <meta property="og:description" content="Track live crypto prices, charts, and donate to support this free tool." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://trackyourcrypto.vercel.app/" />
-  <meta property="og:image" content="https://trackyourcrypto.vercel.app/og-image.png" />
+  <meta property="og:image" content="https://trackyourcrypto.vercel.app/preview.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@trackyourcrypto" />
 
-  <!-- JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"WebSite",
-    "name":"Crypto Tracker Hub",
-    "url":"https://trackyourcrypto.vercel.app/",
-    "description":"Live cryptocurrency price tracker. Track Bitcoin, Ethereum, Dogecoin & 100+ coins in INR and global currencies."
-  }
-  </script>
-
-  <!-- Chart.js and QR lib -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root{
-      --bg:#071124; --panel:rgba(255,255,255,0.03); --muted:#9fb0c8;
-      --accent:#3b82f6; --pos:#16a34a; --neg:#ef4444;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%; margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:linear-gradient(180deg,#071124,#071a2b); color:#e6f0fb}
-    header {position:sticky; top:0; z-index:80; backdrop-filter: blur(6px); background:rgba(6,12,22,0.6); border-bottom:1px solid rgba(255,255,255,0.03); padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px}
-    .brand {display:flex; gap:12px; align-items:center}
-    .logo {width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#00c2ff,#7c3aed);display:grid;place-items:center;color:#021124;font-weight:700}
-    .title {font-weight:700; font-size:1.05rem}
-    .subtitle {font-size:0.85rem; color:var(--muted)}
-
-    .controls {display:flex; gap:10px; align-items:center}
-    .controls input, .controls select, .controls button{padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); color:inherit}
-    .donate-btn{background:linear-gradient(90deg,#ff6b6b,#ff9a8b); border:none; color:#021124; font-weight:700}
-
-    /* Layout: 3-column (left ad, center content, right ad) */
-    .container {display:grid; grid-template-columns:180px 1fr 180px; gap:14px; width:100%; max-width:1300px; margin:18px auto; padding:0 14px}
-    .sidebar {padding:8px}
-    .content {padding:6px}
-
-    .grid {display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:12px}
-    .card {background:var(--panel); border-radius:12px; padding:12px; box-shadow:0 8px 24px rgba(2,6,23,0.6); cursor:pointer; transition:transform .18s}
-    .card:hover{transform:translateY(-6px)}
-    .card-row{display:flex; justify-content:space-between; align-items:center}
-    .coin-left{display:flex; gap:8px; align-items:center}
-    .coin-img{width:36px;height:36px;border-radius:50%; background:#071424}
-    .coin-name{font-weight:700}
-    .muted{color:var(--muted); font-size:0.88rem}
-    .price{font-weight:700; color:var(--accent)}
-    .change-pos{color:var(--pos)}
-    .change-neg{color:var(--neg)}
-
-    .ad-card {background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01)); border:1px dashed rgba(255,255,255,0.03); border-radius:10px; padding:10px; text-align:center; color:var(--muted)}
-
-    footer {padding:16px; text-align:center; color:var(--muted); border-top:1px solid rgba(255,255,255,0.03); margin-top:20px}
-
-    /* Modal */
-    .overlay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.85)); z-index:200}
-    .overlay.show{display:flex}
-    .modal{width:100%; max-width:1100px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:16px; display:grid; grid-template-columns:360px 1fr; gap:14px; max-height:90vh; overflow:auto}
-    @media(max-width:960px){ .container{grid-template-columns:1fr} .sidebar{display:none} .modal{grid-template-columns:1fr} }
-
-    .modal-left{padding:10px}
-    .big-price{font-size:1.6rem; font-weight:800; color:var(--accent)}
-    .stat{color:var(--muted); margin-top:8px}
-    .chart-wrap{background:transparent; padding:6px; border-radius:8px}
-
-    /* Floating sticky ad */
-    .floating-ad {position:fixed; left:50%; transform:translateX(-50%); bottom:8px; z-index:300; width:100%; max-width:980px; display:flex; justify-content:center; pointer-events:auto}
-    .floating-ad .ad-frame {width:728px; max-width:92vw; border-radius:8px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-    @media(max-width:420px){ .floating-ad{ bottom:0 } .floating-ad .ad-frame{ width:320px } }
+    body { background: #f9fafb; }
+    .ad-space { background:#f3f4f6; text-align:center; margin:10px 0; padding:5px; }
+    .floating-ad { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.2); z-index: 50; }
+    .sidebar-ad { position: fixed; top: 100px; width: 160px; height: 600px; background: #f3f4f6; }
+    .sidebar-left { left: 0; }
+    .sidebar-right { right: 0; }
   </style>
 </head>
-<body>
+<body class="font-sans text-gray-800">
 
-  <header>
-    <div class="brand">
-      <div class="logo">CT</div>
-      <div>
-        <div class="title">Crypto Tracker Hub</div>
-        <div class="subtitle">Live prices • Default INR • Click coin for charts</div>
-      </div>
-    </div>
-
-    <div class="controls" role="region" aria-label="controls">
-      <input id="search" type="search" placeholder="Search coin (bitcoin, eth, doge)"/>
-      <select id="currency" aria-label="currency"></select>
-      <button id="refresh">Refresh</button>
-      <button id="donateBtn" class="donate-btn">Donate ❤️</button>
-    </div>
+  <!-- Header -->
+  <header class="bg-gray-900 text-white text-center py-4">
+    <h1 class="text-2xl font-bold">Live Crypto Price Tracker (INR)</h1>
   </header>
 
-  <!-- Header ad (728x90) -->
-  <div style="width:100%; display:flex; justify-content:center; margin-top:12px">
-    <div id="header-ad">
-      <!-- AD CODE #1 -->
-      <script type="text/javascript">
-        atOptions = {'key':'00647905674d4da9b96b56e5b7617bfc','format':'iframe','height':90,'width':728,'params':{}};
-      </script>
-      <script type="text/javascript" src="//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js"></script>
-    </div>
+  <!-- Header Ad -->
+  <div class="ad-space">
+    <!-- Your header ad code -->
+    <script type="text/javascript">
+      atOptions = {
+        'key' : '00647905674d4da9b96b56e5b7617bfc',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js"></script>
   </div>
 
-  <main class="container" role="main">
-    <!-- Left sidebar ad (160x600) -->
-    <aside class="sidebar" aria-hidden="false">
-      <div class="ad-card" style="padding:6px">
-        <!-- AD CODE #2 (left) -->
-        <script type="text/javascript">
-          atOptions = {'key':'c650c0411405cd2cc74c03a232e2be9b','format':'iframe','height':600,'width':160,'params':{}};
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
-      </div>
-    </aside>
+  <!-- Sidebars -->
+  <div class="sidebar-ad sidebar-left">
+    <script type="text/javascript">
+      atOptions = {
+        'key' : 'c650c0411405cd2cc74c03a232e2be9b',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
+  </div>
 
-    <!-- CENTER CONTENT -->
-    <section class="content" aria-live="polite">
-      <div id="grid" class="grid" aria-busy="true"></div>
-    </section>
+  <div class="sidebar-ad sidebar-right">
+    <script type="text/javascript">
+      atOptions = {
+        'key' : 'c650c0411405cd2cc74c03a232e2be9b',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
+  </div>
 
-    <!-- Right sidebar ad (160x600) -->
-    <aside class="sidebar" aria-hidden="false">
-      <div class="ad-card" style="padding:6px">
-        <!-- AD CODE #2 (right) -->
-        <script type="text/javascript">
-          atOptions = {'key':'c650c0411405cd2cc74c03a232e2be9b','format':'iframe','height':600,'width':160,'params':{}};
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
-      </div>
-    </aside>
-  </main>
+  <!-- Main -->
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <h2 class="text-xl font-semibold mb-4">Top Cryptocurrencies</h2>
+    <div id="crypto-table" class="overflow-x-auto"></div>
 
-  <footer>
-    <div>© 2025 Crypto Tracker Hub • Data by CoinGecko</div>
-    <div id="footer-ad" style="margin-top:10px">
-      <!-- AD CODE #3 in footer container (script loaded dynamically by JS below if needed) -->
+    <div class="ad-space">
+      <!-- Inline ad -->
       <script async="async" data-cfasync="false" src="//pl27595169.revenuecpmgate.com/8fd0002e3d1df52c5221ea4abb16c8b0/invoke.js"></script>
       <div id="container-8fd0002e3d1df52c5221ea4abb16c8b0"></div>
     </div>
+
+    <!-- Chart -->
+    <section class="mt-8">
+      <h2 class="text-xl font-semibold">Price Chart</h2>
+      <canvas id="priceChart" height="100"></canvas>
+    </section>
+
+    <!-- Donate -->
+    <section id="donate" class="mt-12 text-center">
+      <h2 class="text-xl font-bold mb-2">Support This Project</h2>
+      <p class="mb-4">If you find this tracker useful, consider supporting with a small donation 💙</p>
+      <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+        <!-- UPI QR -->
+        <div>
+          <img src="your-upi-qr.png" alt="Donate via UPI" class="w-40 mx-auto mb-2">
+          <p>Donate via UPI</p>
+        </div>
+        <!-- Stripe -->
+        <div>
+          <a href="https://donate.stripe.com/test_xxxx" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow">Donate Globally (Stripe)</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white text-center py-4 mt-12">
+    <p>© 2025 TrackYourCrypto. Built with ❤️ for crypto lovers.</p>
   </footer>
 
-  <!-- Coin detail modal (single-page) -->
-  <div id="coinOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal" role="document">
-      <div class="modal-left">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div id="coinTitle" class="coin-name" style="font-size:1.05rem"></div>
-            <div id="coinSymbol" class="muted"></div>
-          </div>
-          <button id="closeCoin" aria-label="close" style="background:none;border:none;color:var(--muted);font-size:20px">✖</button>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div id="coinPrice" class="big-price">—</div>
-          <div id="coinChange" class="stat">—</div>
-          <div id="coinMcap" class="stat">—</div>
-          <div id="coinVol" class="stat">—</div>
-          <div id="coinSupply" class="stat">—</div>
-        </div>
-
-        <div style="margin-top:14px">
-          <div class="muted">Description</div>
-          <div id="coinDesc" style="margin-top:8px; color:var(--muted); max-height:220px; overflow:auto"></div>
-        </div>
-      </div>
-
-      <div class="chart-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-weight:700">Price Chart</div>
-          <div style="display:flex; gap:8px; align-items:center">
-            <select id="chartRange" style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.02); color:inherit; border:1px solid rgba(255,255,255,0.03)">
-              <option value="7">7d</option>
-              <option value="30">30d</option>
-              <option value="90">90d</option>
-              <option value="365">1y</option>
-            </select>
-            <div id="chartLoading" style="color:var(--muted); font-size:13px"></div>
-          </div>
-        </div>
-        <canvas id="coinChart" style="width:100%; height:360px; margin-top:10px"></canvas>
-      </div>
-    </div>
+  <!-- Floating Ad -->
+  <div class="floating-ad">
+    <script type="text/javascript">
+      atOptions = {
+        'key' : '00647905674d4da9b96b56e5b7617bfc',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js"></script>
   </div>
 
-  <!-- Donate modal (same page). UPI ID will NOT be displayed as text; it will only be encoded into the QR -->
-  <div id="donateOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="modal" style="max-width:420px; grid-template-columns:1fr;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-weight:700">Support this project ❤️</div>
-        <button id="closeDonate" aria-label="close" style="background:none;border:none;color:var(--muted);font-size:20px">✖</button>
-      </div>
+  <!-- Script -->
+  <script>
+    const tableDiv = document.getElementById("crypto-table");
+    const chartCtx = document.getElementById("priceChart").getContext("2d");
+    let priceChart;
 
-      <div style="text-align:center; margin-top:12px">
-        <div class="muted">Scan this secure UPI QR to donate (UPI apps)</div>
-        <div id="donateQR" style="margin:12px auto; width:220px; height:220px;"></div>
-        <div class="muted" style="font-size:0.9rem; margin-top:10px">International donors: many wallets/apps support scanning UPI QR codes. If yours doesn't, please use a UPI-enabled contact or app.</div>
+    async function loadCryptos() {
+      const res = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=10&page=1&sparkline=false");
+      const data = await res.json();
 
-        <!-- AD CODE #4 as hyperlink under QR -->
-        <div style="margin-top:12px;">
-          <a href="https://www.revenuecpmgate.com/ez3caer7?key=18b778219091fc957e6516751ad771f3" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.02); color:var(--muted); text-decoration:none;">Special Offer</a>
-        </div>
-
-        <div style="margin-top:14px;">
-          <div class="ad-card" style="padding:8px; margin-top:10px">Ad space</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating sticky banner (bottom) -->
-  <div class="floating-ad" aria-hidden="false">
-    <div class="ad-frame" id="floating-ad">
-      <!-- We'll inject AD CODE #1 here via DOM to ensure it runs -->
-    </div>
-  </div>
-
-<script>
-/* =========================
-   CONFIG & UTILS
-   ========================= */
-const API_BASE = 'https://api.coingecko.com/api/v3';
-const gridEl = document.getElementById('grid');
-const searchEl = document.getElementById('search');
-const currencyEl = document.getElementById('currency');
-const refreshBtn = document.getElementById('refresh');
-const donateBtn = document.getElementById('donateBtn');
-
-const coinOverlay = document.getElementById('coinOverlay');
-const closeCoinBtn = document.getElementById('closeCoin');
-const chartRange = document.getElementById('chartRange');
-const chartCanvas = document.getElementById('coinChart');
-
-const donateOverlay = document.getElementById('donateOverlay');
-const closeDonateBtn = document.getElementById('closeDonate');
-const donateQRDiv = document.getElementById('donateQR');
-
-const headerAdContainer = document.getElementById('header-ad');
-const floatingAdContainer = document.getElementById('floating-ad');
-
-let coins = [];
-let currentCurrency = 'inr';
-let activeCoinId = null;
-let chartInstance = null;
-
-/* Format helpers */
-function niceNumber(n){
-  if(n === null || n === undefined) return '—';
-  if(n >= 1e12) return (n/1e12).toFixed(2)+'T';
-  if(n >= 1e9) return (n/1e9).toFixed(2)+'B';
-  if(n >= 1e6) return (n/1e6).toFixed(2)+'M';
-  if(n >= 1e3) return (n/1e3).toFixed(2)+'K';
-  return Number(n).toLocaleString();
-}
-function formatCurrency(value){
-  try {
-    const code = currentCurrency.toUpperCase();
-    // Use en-IN locale for INR
-    const locale = (code === 'INR') ? 'en-IN' : 'en-US';
-    return new Intl.NumberFormat(locale, { style:'currency', currency:code }).format(value);
-  } catch(e) {
-    return Number(value).toLocaleString() + ' ' + currentCurrency.toUpperCase();
-  }
-}
-
-/* =========================
-   AD INJECTION HELPERS
-   - inline ad code (#3) must be injected via DOM so the external script runs
-   ========================= */
-
-function injectInlineAd(container, uniqueId){
-  // AD CODE #3: external script src + container div
-  const script = document.createElement('script');
-  script.async = true;
-  script.dataset.cfasync = "false";
-  script.src = "//pl27595169.revenuecpmgate.com/8fd0002e3d1df52c5221ea4abb16c8b0/invoke.js";
-  // unique container for ad
-  const adDiv = document.createElement('div');
-  adDiv.id = `container-8fd${uniqueId}`;
-  container.appendChild(adDiv);
-  container.appendChild(script);
-}
-
-/* For floating ad & header ad: ensure ad code runs by injecting script dynamically */
-function injectHeaderFloatingAd(){
-  // AD CODE #1 (728x90) for floating container
-  // We'll inject the same external script used in header to floating container
-  // Create the atOptions variable in global scope for the script to pick up
-  window.atOptions = {'key':'00647905674d4da9b96b56e5b7617bfc','format':'iframe','height':90,'width':728,'params':{}};
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = "//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js";
-  floatingAdContainer.appendChild(script);
-}
-
-/* =========================
-   UPI QR (DONATE)
-   - UPI ID kept only in JS variable and NOT rendered as text anywhere
-   ========================= */
-const upiId = '7469922719@fam'; // used only to encode QR (not displayed as text)
-
-function renderDonateQR(){
-  // Standard UPI deep link format
-  const payload = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('Support+Crypto+Tracker')}&cu=INR`;
-  // Use QRCode library to draw to canvas inside donateQRDiv
-  donateQRDiv.innerHTML = ''; // clear
-  const canvas = document.createElement('canvas');
-  donateQRDiv.appendChild(canvas);
-  QRCode.toCanvas(canvas, payload, { width: 220 }, function (error) {
-    if (error) { console.error(error); donateQRDiv.innerHTML = '<div class="muted">Unable to render QR</div>'; }
-  });
-}
-
-/* =========================
-   UI: populate currency selector (common fiat list)
-   ========================= */
-const supportedFiat = ['inr','usd','eur','gbp','jpy','aud','cad','chf','cny','nzd'];
-function initCurrencySelect(){
-  currencyEl.innerHTML = '';
-  supportedFiat.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c; opt.textContent = c.toUpperCase();
-    if(c === 'inr') { opt.selected = true; currentCurrency = 'inr'; }
-    currencyEl.appendChild(opt);
-  });
-}
-
-/* =========================
-   Load coins (top 100) from CoinGecko
-   ========================= */
-async function loadCoins(){
-  gridEl.setAttribute('aria-busy', 'true');
-  gridEl.innerHTML = `<div style="grid-column:1/-1;padding:28px;text-align:center;color:var(--muted)">Loading <span style="display:inline-block;width:14px;height:14px;border:3px solid rgba(255,255,255,0.06);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite"></span></div>`;
-  try {
-    const res = await fetch(`${API_BASE}/coins/markets?vs_currency=${currentCurrency}&order=market_cap_desc&per_page=100&page=1&sparkline=false`);
-    coins = await res.json();
-    renderCoinGrid(coins);
-  } catch (err) {
-    console.error(err);
-    gridEl.innerHTML = `<div style="grid-column:1/-1;padding:28px;text-align:center;color:#fca5a5">Failed to load data. Click Refresh.</div>`;
-  } finally {
-    gridEl.setAttribute('aria-busy', 'false');
-  }
-}
-
-/* =========================
-   Render grid with inline ads after every 5 coins
-   ========================= */
-function renderCoinGrid(list){
-  gridEl.innerHTML = '';
-  if(!list || list.length === 0){
-    gridEl.innerHTML = `<div style="grid-column:1/-1;padding:28px;text-align:center;color:var(--muted)">No coins found.</div>`;
-    return;
-  }
-
-  list.forEach((c, i) => {
-    // coin card
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.tabIndex = 0;
-    card.setAttribute('role', 'button');
-    card.innerHTML = `
-      <div class="card-row">
-        <div class="coin-left">
-          <img class="coin-img" src="${c.image}" alt="${c.name} icon" />
-          <div>
-            <div class="coin-name">${c.name}</div>
-            <div class="muted">${c.symbol.toUpperCase()} • Rank ${c.market_cap_rank}</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div class="price">${formatCurrency(c.current_price)}</div>
-          <div class="${c.price_change_percentage_24h >= 0 ? 'change-pos' : 'change-neg'}" style="font-weight:700">${c.price_change_percentage_24h ? c.price_change_percentage_24h.toFixed(2) + '%' : '—'}</div>
-        </div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted)">
-        <div>MktCap: ${niceNumber(c.market_cap)}</div>
-        <div>Vol(24h): ${niceNumber(c.total_volume)}</div>
-      </div>
-    `;
-    card.addEventListener('click', () => openCoinModal(c.id));
-    card.addEventListener('keypress', (e) => { if (e.key === 'Enter') openCoinModal(c.id); });
-    gridEl.appendChild(card);
-
-    // Insert inline ad after every 5 coins (i = 4,9,14,...)
-    if((i+1) % 5 === 0){
-      const adWrapper = document.createElement('div');
-      adWrapper.className = 'ad-card';
-      adWrapper.style.minHeight = '90px'; // reserve space
-      // we will inject ad script into adWrapper
-      gridEl.appendChild(adWrapper);
-      injectInlineAd(adWrapper, `${Date.now()}${i}`);
+      // Table
+      let html = `
+        <table class="w-full border border-gray-300">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-2">Coin</th>
+              <th class="p-2">Price (INR)</th>
+              <th class="p-2">Market Cap</th>
+              <th class="p-2">24h Change</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      data.forEach(c => {
+        html += `
+          <tr class="border-t cursor-pointer hover:bg-gray-100" onclick="loadChart('${c.id}')">
+            <td class="p-2 flex items-center gap-2"><img src="${c.image}" class="w-5 h-5">${c.name} (${c.symbol.toUpperCase()})</td>
+            <td class="p-2">₹${c.current_price.toLocaleString()}</td>
+            <td class="p-2">₹${c.market_cap.toLocaleString()}</td>
+            <td class="p-2 ${c.price_change_percentage_24h >= 0 ? 'text-green-600' : 'text-red-600'}">
+              ${c.price_change_percentage_24h.toFixed(2)}%
+            </td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+      tableDiv.innerHTML = html;
     }
-  });
-}
 
-/* =========================
-   COIN MODAL + CHART
-   ========================= */
+    async function loadChart(coinId) {
+      const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=inr&days=7&interval=daily`);
+      const data = await res.json();
+      const prices = data.prices.map(p => p[1]);
+      const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString());
 
-const coinTitleEl = document.getElementById('coinTitle');
-const coinSymbolEl = document.getElementById('coinSymbol');
-const coinPriceEl = document.getElementById('coinPrice');
-const coinChangeEl = document.getElementById('coinChange');
-const coinMcapEl = document.getElementById('coinMcap');
-const coinVolEl = document.getElementById('coinVol');
-const coinSupplyEl = document.getElementById('coinSupply');
-const coinDescEl = document.getElementById('coinDesc');
-const chartLoadingEl = document.getElementById('chartLoading');
-
-async function openCoinModal(id){
-  activeCoinId = id;
-  coinOverlay.classList.add('show');
-  coinOverlay.setAttribute('aria-hidden','false');
-  // fetch details
-  try{
-    const res = await fetch(`${API_BASE}/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`);
-    const d = await res.json();
-    coinTitleEl.textContent = d.name;
-    coinSymbolEl.textContent = d.symbol.toUpperCase();
-    const priceVal = d.market_data?.current_price?.[currentCurrency] ?? null;
-    coinPriceEl.textContent = priceVal !== null ? formatCurrency(priceVal) : '—';
-    const change24 = d.market_data?.price_change_percentage_24h;
-    coinChangeEl.innerHTML = change24 !== undefined && change24 !== null ? `<span style="color:${change24>=0? 'var(--pos)' : 'var(--neg)'}; font-weight:700">${change24.toFixed(2)}%</span> (24h)` : '—';
-    coinMcapEl.textContent = `Market Cap: ${niceNumber(d.market_data?.market_cap?.[currentCurrency])}`;
-    coinVolEl.textContent = `Volume(24h): ${niceNumber(d.market_data?.total_volume?.[currentCurrency])}`;
-    coinSupplyEl.textContent = `Circulating: ${niceNumber(d.market_data?.circulating_supply)}`;
-    // brief description (sanitized naive: strip tags)
-    const desc = (d.description?.en || '').replace(/(<([^>]+)>)/gi, "");
-    coinDescEl.textContent = desc ? desc.slice(0,1500) : 'No description available.';
-    // load chart
-    await loadCoinChart(id, chartRange.value);
-  }catch(err){
-    console.error(err);
-    coinTitleEl.textContent = id;
-    coinDescEl.textContent = 'Unable to load coin details.';
-  }
-}
-
-closeCoinBtn.addEventListener('click', closeCoinModal);
-function closeCoinModal(){
-  coinOverlay.classList.remove('show');
-  coinOverlay.setAttribute('aria-hidden','true');
-  if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
-  activeCoinId = null;
-}
-
-async function loadCoinChart(id, days=7){
-  chartLoadingEl.textContent = 'Loading chart...';
-  try{
-    const res = await fetch(`${API_BASE}/coins/${id}/market_chart?vs_currency=${currentCurrency}&days=${days}`);
-    const d = await res.json();
-    const labels = d.prices.map(p => new Date(p[0]).toLocaleString());
-    const values = d.prices.map(p => p[1]);
-    if(chartInstance) chartInstance.destroy();
-    const ctx = chartCanvas.getContext('2d');
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets: [{ label: `${id} price (${currentCurrency.toUpperCase()})`, data: values, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.08)', pointRadius: 0, tension: 0.18 }] },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display:false }, tooltip: { callbacks: { label: ctx => formatCurrency(ctx.parsed.y) } } },
-        scales: { x: { ticks:{ color:'#9fb0c8'}, grid:{color:'rgba(255,255,255,0.03)'} }, y: { ticks:{ color:'#9fb0c8'}, grid:{color:'rgba(255,255,255,0.03)'} } }
-      }
-    });
-  }catch(err){
-    console.error(err);
-  }finally{
-    chartLoadingEl.textContent = '';
-  }
-}
-
-chartRange.addEventListener('change', ()=>{ if(activeCoinId) loadCoinChart(activeCoinId, chartRange.value); });
-
-/* =========================
-   SEARCH, CURRENCY, REFRESH
-   ========================= */
-searchEl.addEventListener('input', () => {
-  const q = searchEl.value.trim().toLowerCase();
-  if(!q){ renderCoinGrid(coins); return; }
-  const filtered = coins.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q));
-  renderCoinGrid(filtered);
-});
-
-currencyEl.addEventListener('change', () => {
-  currentCurrency = currencyEl.value;
-  loadCoins();
-});
-refreshBtn.addEventListener('click', loadCoins);
-
-/* =========================
-   DONATE MODAL events
-   ========================= */
-donateBtn.addEventListener('click', ()=>{
-  renderDonateQR();
-  donateOverlay.classList.add('show');
-  donateOverlay.setAttribute('aria-hidden','false');
-});
-closeDonateBtn.addEventListener('click', ()=>{
-  donateOverlay.classList.remove('show');
-  donateOverlay.setAttribute('aria-hidden','true');
-});
-
-/* =========================
-   INITIALIZE
-   ========================= */
-function init(){
-  initCurrencySelect();
-  injectHeaderFloatingAd();        // floating ad (and header already has script from HTML)
-  loadCoins();
-  // footer ad already placed in HTML block
-}
-init();
-
-/* =========================
-   Auto-refresh every 60s
-   ========================= */
-setInterval(() => loadCoins(), 60000);
-
-/* =========================
-   Ensure keyboard escape closes modals
-   ========================= */
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape'){
-    if(document.querySelector('.overlay.show')) {
-      document.querySelectorAll('.overlay.show').forEach(el => el.classList.remove('show'));
+      if (priceChart) priceChart.destroy();
+      priceChart = new Chart(chartCtx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: `${coinId.toUpperCase()} Price (7d)`,
+            data: prices,
+            borderColor: "rgba(75,192,192,1)",
+            backgroundColor: "rgba(75,192,192,0.2)",
+            tension: 0.3,
+            fill: true
+          }]
+        }
+      });
     }
-    if(chartInstance){ chartInstance.destroy(); chartInstance = null; }
-  }
-});
-</script>
 
+    loadCryptos();
+  </script>
 </body>
 </html>
