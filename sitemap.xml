@@ -1,167 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TrackYourCrypto — Top 100 Coins</title>
-<meta name="description" content="Live prices for top 100 cryptocurrencies with sparklines and search. Default INR." />
-
-<!-- Chart.js for modal charts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-
-<style>
-:root{
-  --bg:#0b1220; --card:#071424; --muted:#9fb0c8; --accent:#3b82f6; --pos:#16a34a; --neg:#ef4444;
-}
-html,body{margin:0;padding:0;font-family:Inter,system-ui; background:var(--bg); color:#e6f0fb}
-.site{max-width:1200px;margin:0 auto;padding:18px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-h1{margin:0;font-size:1.2rem}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.controls input,.controls select,.controls button{padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.02);color:inherit}
-main{display:grid;gap:12px}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.coin-card{background:var(--card);border-radius:10px;padding:10px;cursor:pointer;transition:transform .12s}
-.coin-card:hover{transform:translateY(-4px)}
-.coin-row{display:flex;justify-content:space-between;align-items:center}
-.coin-left{display:flex;align-items:center;gap:8px}
-.coin-img{width:36px;height:36px;border-radius:50%}
-.coin-name{font-weight:700}
-.muted{color:var(--muted);font-size:0.88rem}
-.price{font-weight:700;color:var(--accent)}
-.change-pos{color:var(--pos)}
-.change-neg{color:var(--neg)}
-.spark{width:100px;height:28px}
-</style>
-</head>
-<body>
-<div class="site">
-<header>
-  <div>
-    <h1>TrackYourCrypto</h1>
-    <div class="muted">Top 100 coins • Default INR</div>
-  </div>
-  <div class="controls">
-    <input id="search" type="search" placeholder="Search coin or symbol" />
-    <select id="currency">
-      <option value="inr">INR</option>
-      <option value="usd">USD</option>
-      <option value="eur">EUR</option>
-    </select>
-    <button id="refresh">Refresh</button>
-  </div>
-</header>
-
-<main>
-<div class="muted" id="status">Loading coins...</div>
-<section id="grid-section">
-  <div id="cards" class="card-grid"></div>
-</section>
-</main>
-</div>
-
-<script>
-const API_BASE = 'https://api.coingecko.com/api/v3';
-const cardsEl = document.getElementById('cards');
-const statusEl = document.getElementById('status');
-const searchEl = document.getElementById('search');
-const currencyEl = document.getElementById('currency');
-const refreshBtn = document.getElementById('refresh');
-
-let allCoins = [];
-let displayCoins = [];
-let currentCurrency = 'inr';
-
-function formatCurrency(v){
-  if(v===null||v===undefined) return '—';
-  const code = currentCurrency.toUpperCase();
-  const locale = code==='INR'?'en-IN':'en-US';
-  try{ return new Intl.NumberFormat(locale,{style:'currency',currency:code}).format(v); }
-  catch(e){ return v + ' ' + code; }
-}
-
-function niceNumber(n){
-  if(n===null||n===undefined) return '—';
-  if(n>=1e12) return (n/1e12).toFixed(2)+'T';
-  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
-  if(n>=1e6) return (n/1e6).toFixed(2)+'M';
-  if(n>=1e3) return (n/1e3).toFixed(2)+'K';
-  return n.toLocaleString();
-}
-
-function sparklineSVG(prices,w=100,h=28){
-  if(!prices||prices.length===0) return `<svg class="spark" viewBox="0 0 ${w} ${h}"></svg>`;
-  const len = prices.length;
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const range = max-min||1;
-  const step = w/(len-1);
-  let d='';
-  prices.forEach((p,i)=>{ const x=i*step; const y=h-((p-min)/range)*(h-4)-2; d+=i===0?`M ${x} ${y}`:` L ${x} ${y}`; });
-  const color = prices[prices.length-1]>=prices[0]?'var(--pos)':'var(--neg)';
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.6"/></svg>`;
-}
-
-async function fetchCoins(){
-  statusEl.textContent='Loading coins…';
-  try{
-    const res = await fetch(`${API_BASE}/coins/markets?vs_currency=${currentCurrency}&order=market_cap_desc&per_page=100&page=1&sparkline=true`);
-    const data = await res.json();
-    allCoins = data;
-    displayCoins = allCoins.slice();
-    renderCoins(displayCoins);
-    statusEl.textContent=`Showing ${displayCoins.length} coins`;
-  }catch(err){
-    console.error(err);
-    statusEl.textContent='Failed to load coins';
-  }
-}
-
-function renderCoins(list){
-  cardsEl.innerHTML='';
-  if(!list.length){ cardsEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted)">No coins found</div>'; return; }
-  list.forEach(c=>{
-    const card=document.createElement('article');
-    card.className='coin-card';
-    card.innerHTML=`
-      <div class="coin-row">
-        <div class="coin-left">
-          <img class="coin-img" src="${c.image}" alt="${c.name}">
-          <div>
-            <div class="coin-name">${c.name}</div>
-            <div class="muted">${c.symbol.toUpperCase()} • Rank ${c.market_cap_rank??'—'}</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div class="price">${formatCurrency(c.current_price)}</div>
-          <div class="${c.price_change_percentage_24h>=0?'change-pos':'change-neg'}">${c.price_change_percentage_24h?.toFixed(2)+'%'||'—'}</div>
-        </div>
-      </div>
-      <div style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
-        <div class="muted">MCap ${niceNumber(c.market_cap)}</div>
-        <div>${sparklineSVG(c.sparkline_in_7d?.price||[])}</div>
-      </div>
-    `;
-    cardsEl.appendChild(card);
-  });
-}
-
-searchEl.addEventListener('input',()=>{
-  const q=searchEl.value.trim().toLowerCase();
-  if(!q){ renderCoins(displayCoins); statusEl.textContent=`Showing ${displayCoins.length} coins`; return; }
-  const filtered=displayCoins.filter(c=>c.name.toLowerCase().includes(q)||c.symbol.toLowerCase().includes(q));
-  renderCoins(filtered);
-  statusEl.textContent=`Found ${filtered.length} coins`;
-});
-
-refreshBtn.addEventListener('click',fetchCoins);
-currencyEl.addEventListener('change',e=>{
-  currentCurrency=e.target.value;
-  fetchCoins();
-});
-
-// initial load
-fetchCoins();
-</script>
-</body>
-</html>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://trackyourcrypto.vercel.app/</loc>
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://trackyourcrypto.vercel.app/#/top100</loc>
+    <priority>0.9</priority>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://trackyourcrypto.vercel.app/#/about</loc>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+</urlset>
