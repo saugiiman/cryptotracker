@@ -4,133 +4,96 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Crypto Price Tracker in INR | Bitcoin, Ethereum & More</title>
+
+  <!-- SEO Meta Tags -->
   <meta name="description" content="Track live cryptocurrency prices in INR & all currencies. Real-time charts for Bitcoin, Ethereum, Dogecoin & 2000+ coins. Free crypto tracker with donation support." />
-  <meta name="keywords" content="crypto price tracker, bitcoin live price in INR, ethereum price, live cryptocurrency prices, best crypto tracker India, real-time crypto charts, BTC to INR, ETH to INR" />
+  <meta name="keywords" content="crypto price tracker, bitcoin live price in INR, ethereum price, live cryptocurrency prices, best crypto tracker India, real-time crypto charts, BTC to INR, ETH to INR, cryptocurrency India, Dogecoin price tracker" />
+  <meta name="author" content="TrackYourCrypto" />
+
+  <!-- Open Graph -->
   <meta property="og:title" content="Live Crypto Price Tracker" />
   <meta property="og:description" content="Track live crypto prices, charts, and donate to support this free tool." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://trackyourcrypto.vercel.app/" />
   <meta property="og:image" content="https://trackyourcrypto.vercel.app/preview.png" />
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Live Crypto Price Tracker" />
+  <meta name="twitter:description" content="Track live crypto prices, charts, and donate to support this free tool." />
+  <meta name="twitter:image" content="https://trackyourcrypto.vercel.app/preview.png" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TrackYourCrypto",
+    "url": "https://trackyourcrypto.vercel.app/",
+    "description": "Track live cryptocurrency prices in INR & other currencies with real-time charts.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "TrackYourCrypto"
+    }
+  }
+  </script>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body { background: #f9fafb; }
-    .ad-space { background:#f3f4f6; text-align:center; margin:10px 0; padding:5px; }
-    .floating-ad { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.2); z-index: 50; }
-    .sidebar-ad { position: fixed; top: 100px; width: 160px; height: 600px; background: #f3f4f6; }
-    .sidebar-left { left: 0; }
-    .sidebar-right { right: 0; }
   </style>
 </head>
 <body class="font-sans text-gray-800">
 
   <!-- Header -->
-  <header class="bg-gray-900 text-white text-center py-4">
-    <h1 class="text-2xl font-bold">Live Crypto Price Tracker (INR)</h1>
+  <header class="bg-gray-900 text-white text-center py-6 shadow">
+    <h1 class="text-3xl font-bold">Live Crypto Price Tracker (INR)</h1>
+    <p class="text-gray-300">Track Bitcoin, Ethereum, Dogecoin & 2000+ coins in real-time</p>
   </header>
 
-  <!-- Header Ad -->
-  <div class="ad-space">
-    <!-- Your header ad code -->
-    <script type="text/javascript">
-      atOptions = {
-        'key' : '00647905674d4da9b96b56e5b7617bfc',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js"></script>
-  </div>
-
-  <!-- Sidebars -->
-  <div class="sidebar-ad sidebar-left">
-    <script type="text/javascript">
-      atOptions = {
-        'key' : 'c650c0411405cd2cc74c03a232e2be9b',
-        'format' : 'iframe',
-        'height' : 600,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
-  </div>
-
-  <div class="sidebar-ad sidebar-right">
-    <script type="text/javascript">
-      atOptions = {
-        'key' : 'c650c0411405cd2cc74c03a232e2be9b',
-        'format' : 'iframe',
-        'height' : 600,
-        'width' : 160,
-        'params' : {}
-      };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/c650c0411405cd2cc74c03a232e2be9b/invoke.js"></script>
-  </div>
-
   <!-- Main -->
-  <main class="max-w-5xl mx-auto px-4 py-8">
-    <h2 class="text-xl font-semibold mb-4">Top Cryptocurrencies</h2>
-    <div id="crypto-table" class="overflow-x-auto"></div>
-
-    <div class="ad-space">
-      <!-- Inline ad -->
-      <script async="async" data-cfasync="false" src="//pl27595169.revenuecpmgate.com/8fd0002e3d1df52c5221ea4abb16c8b0/invoke.js"></script>
-      <div id="container-8fd0002e3d1df52c5221ea4abb16c8b0"></div>
-    </div>
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <!-- Crypto Table -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Top Cryptocurrencies</h2>
+      <div id="crypto-table" class="overflow-x-auto"></div>
+    </section>
 
     <!-- Chart -->
-    <section class="mt-8">
-      <h2 class="text-xl font-semibold">Price Chart</h2>
+    <section class="mt-10">
+      <h2 class="text-2xl font-semibold mb-4">Price Chart</h2>
       <canvas id="priceChart" height="100"></canvas>
     </section>
 
     <!-- Donate -->
-<section id="donate" class="mt-12 text-center">
-  <h2 class="text-xl font-bold mb-2">Support This Project</h2>
-  <p class="mb-4">If you find this tracker useful, support it with a small UPI donation 💙</p>
-  <div class="flex flex-col md:flex-row justify-center items-center gap-6">
-    <!-- UPI QR -->
-    <div>
-      <img src="your-upi-qr.png" alt="Donate via UPI" class="w-40 mx-auto mb-2">
-      <p>Scan with any UPI app</p>
-    </div>
-    <!-- UPI Button -->
-    <div>
-      <a href="upi://pay?pa=7469922719@fam&pn=TrackYourCrypto&cu=INR" 
-         class="bg-green-600 text-white px-4 py-2 rounded-lg shadow">
-        Donate with UPI
-      </a>
-    </div>
-  </div>
-</section>
+    <section id="donate" class="mt-12 text-center">
+      <h2 class="text-2xl font-bold mb-2">Support This Project</h2>
+      <p class="mb-4">If you find this tracker useful, support it with a small UPI donation 💙</p>
+      <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+        <!-- UPI QR -->
+        <div>
+          <img src="your-upi-qr.png" alt="Donate via UPI" class="w-40 mx-auto mb-2">
+          <p>Scan with any UPI app</p>
+        </div>
+        <!-- UPI Button -->
+        <div>
+          <a href="upi://pay?pa=7469922719@fam&pn=TrackYourCrypto&cu=INR" 
+             class="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition">
+            Donate with UPI
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-gray-900 text-white text-center py-4 mt-12">
+  <footer class="bg-gray-900 text-white text-center py-6 mt-12">
     <p>© 2025 TrackYourCrypto. Built with ❤️ for crypto lovers.</p>
   </footer>
-
-  <!-- Floating Ad -->
-  <div class="floating-ad">
-    <script type="text/javascript">
-      atOptions = {
-        'key' : '00647905674d4da9b96b56e5b7617bfc',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/00647905674d4da9b96b56e5b7617bfc/invoke.js"></script>
-  </div>
 
   <!-- Script -->
   <script>
@@ -144,7 +107,7 @@
 
       // Table
       let html = `
-        <table class="w-full border border-gray-300">
+        <table class="w-full border border-gray-300 shadow">
           <thead class="bg-gray-200">
             <tr>
               <th class="p-2">Coin</th>
@@ -194,7 +157,9 @@
       });
     }
 
+    // Auto-refresh prices every 60 seconds
     loadCryptos();
+    setInterval(loadCryptos, 60000);
   </script>
 </body>
 </html>
