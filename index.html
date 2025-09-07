@@ -1,156 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Crypto Price Tracker in INR & All Currencies</title>
-  <meta name="description" content="Track live cryptocurrency prices in INR, USD, EUR, GBP & more. Search any crypto like Bitcoin, Ethereum, Dogecoin and get real-time data."/>
-  <meta name="keywords" content="crypto price tracker, bitcoin in INR, ethereum live price, dogecoin price, coin tracker, live crypto rates, cryptocurrency prices in India"/>
+  <title>Crypto Price Tracker | Live Bitcoin, Ethereum Prices in INR</title>
+  <meta name="description" content="Track live cryptocurrency prices in INR, USD, EUR & more. Real-time updates for Bitcoin, Ethereum, Dogecoin, Solana and 100+ top coins.">
+  <meta name="keywords" content="crypto price tracker, bitcoin price in INR, ethereum price, dogecoin price, live crypto tracker India, cryptocurrency prices, coin market cap">
+
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Crypto Price Tracker",
+    "url": "https://trackyourcrypto.vercel.app/",
+    "description": "Live cryptocurrency price tracker for Bitcoin, Ethereum, Dogecoin, Solana & more in INR & 100+ currencies.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "All"
+  }
+  </script>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background: #1e293b;
-      padding: 20px;
-    }
-    h1 {
-      margin: 10px 0;
-      font-size: 2rem;
-      background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .controls {
-      margin: 20px;
-    }
-    select, input {
-      padding: 8px;
-      margin: 5px;
-      border-radius: 6px;
-      border: none;
-      outline: none;
-      font-size: 1rem;
-    }
-    table {
-      width: 90%;
-      margin: auto;
-      border-collapse: collapse;
-    }
-    th, td {
-      border-bottom: 1px solid #374151;
-      padding: 12px;
-    }
-    th {
-      background: #111827;
-      position: sticky;
-      top: 0;
-    }
-    tr:hover {
-      background: #1f2937;
-    }
-    footer {
-      margin-top: 20px;
-      padding: 15px;
-      background: #111827;
-      color: #9ca3af;
-      font-size: 0.9rem;
-    }
+    body {font-family: Arial, sans-serif;background:#0f172a;color:#fff;margin:0;}
+    header {background:#1e293b;padding:20px;text-align:center;position:sticky;top:0;}
+    h1 {margin:0;font-size:2rem;background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .controls {margin-top:10px;}
+    select,input {padding:10px;margin:5px;border-radius:6px;border:none;font-size:1rem;}
+    .crypto-container {display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;padding:20px;}
+    .card {background:#1e293b;border-radius:16px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform .3s;}
+    .card:hover {transform:translateY(-5px);}
+    .coin-header {display:flex;align-items:center;gap:10px;}
+    .coin-header img {width:32px;height:32px;}
+    .coin-name {font-weight:bold;}
+    .price {margin-top:10px;font-size:1.2rem;font-weight:bold;}
+    .change {margin-top:5px;}
+    footer {margin-top:20px;padding:15px;background:#111827;color:#9ca3af;text-align:center;font-size:.9rem;}
+    a {color:#60a5fa;text-decoration:none;}
   </style>
 </head>
 <body>
   <header>
     <h1>🚀 Live Crypto Price Tracker</h1>
-    <p>Track all cryptocurrencies in INR (default) or any currency worldwide.</p>
+    <p>Track Bitcoin, Ethereum, Dogecoin & more in INR (default) & all currencies.</p>
+    <div class="controls">
+      <input type="text" id="search" placeholder="🔍 Search Bitcoin, Ethereum, Dogecoin..."/>
+      <select id="currency"></select>
+    </div>
   </header>
 
-  <div class="controls">
-    <input type="text" id="search" placeholder="🔍 Search crypto (e.g. Bitcoin)" />
-    <select id="currency"></select>
-  </div>
+  <main>
+    <section class="crypto-container" id="crypto-container"></section>
+  </main>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Coin</th>
-        <th>Price</th>
-        <th>24h Change</th>
-        <th>Market Cap</th>
-      </tr>
-    </thead>
-    <tbody id="crypto-table"></tbody>
-  </table>
-
-  <footer>
-    © 2025 Crypto Price Tracker | Powered by CoinGecko API
-  </footer>
+  <footer>© 2025 Crypto Price Tracker | Powered by CoinGecko API</footer>
 
   <script>
     const API_BASE = "https://api.coingecko.com/api/v3";
-    const tableBody = document.getElementById("crypto-table");
+    const container = document.getElementById("crypto-container");
     const searchInput = document.getElementById("search");
     const currencySelect = document.getElementById("currency");
+    let currentCurrency = "inr"; let coins = [];
 
-    let currentCurrency = "inr";
-    let coins = [];
-
-    // Load all supported currencies
     async function loadCurrencies() {
       const res = await fetch(`${API_BASE}/simple/supported_vs_currencies`);
       const currencies = await res.json();
       currencySelect.innerHTML = currencies.map(c => 
-        `<option value="${c}" ${c === "inr" ? "selected" : ""}>${c.toUpperCase()}</option>`
+        `<option value="${c}" ${c==="inr"?"selected":""}>${c.toUpperCase()}</option>`
       ).join("");
     }
 
-    // Load market data
-    async function loadData() {
+    async function loadCoins() {
       const res = await fetch(`${API_BASE}/coins/markets?vs_currency=${currentCurrency}&order=market_cap_desc&per_page=100&page=1&sparkline=false`);
       coins = await res.json();
-      displayData(coins);
+      displayCoins(coins);
     }
 
-    // Display table
-    function displayData(data) {
-      tableBody.innerHTML = data.map((coin, index) => `
-        <tr>
-          <td>${index + 1}</td>
-          <td><img src="${coin.image}" alt="${coin.name}" width="20" style="vertical-align:middle;"> ${coin.name} (${coin.symbol.toUpperCase()})</td>
-          <td>${coin.current_price.toLocaleString()} ${currentCurrency.toUpperCase()}</td>
-          <td style="color:${coin.price_change_percentage_24h >= 0 ? 'lime' : 'red'};">
-            ${coin.price_change_percentage_24h.toFixed(2)}%
-          </td>
-          <td>${coin.market_cap.toLocaleString()} ${currentCurrency.toUpperCase()}</td>
-        </tr>
+    function displayCoins(data) {
+      container.innerHTML = data.map(coin => `
+        <a href="coin.html?id=${coin.id}&currency=${currentCurrency}" class="card">
+          <div class="coin-header">
+            <img src="${coin.image}" alt="${coin.name}">
+            <div>
+              <div class="coin-name">${coin.name} (${coin.symbol.toUpperCase()})</div>
+              <div>Rank #${coin.market_cap_rank}</div>
+            </div>
+          </div>
+          <div class="price">${coin.current_price.toLocaleString()} ${currentCurrency.toUpperCase()}</div>
+          <div class="change" style="color:${coin.price_change_percentage_24h>=0?'lime':'red'};">
+            ${coin.price_change_percentage_24h.toFixed(2)}% (24h)
+          </div>
+          <div>Market Cap: ${coin.market_cap.toLocaleString()} ${currentCurrency.toUpperCase()}</div>
+        </a>
       `).join("");
     }
 
-    // Search coins
     searchInput.addEventListener("input", e => {
       const val = e.target.value.toLowerCase();
-      const filtered = coins.filter(c => 
-        c.name.toLowerCase().includes(val) || c.symbol.toLowerCase().includes(val)
-      );
-      displayData(filtered);
+      const filtered = coins.filter(c => c.name.toLowerCase().includes(val)||c.symbol.toLowerCase().includes(val));
+      displayCoins(filtered);
     });
 
-    // Change currency
-    currencySelect.addEventListener("change", e => {
-      currentCurrency = e.target.value;
-      loadData();
-    });
+    currencySelect.addEventListener("change", e => {currentCurrency=e.target.value;loadCoins();});
+    setInterval(loadCoins,60000);
 
-    // Auto-refresh every 60s
-    setInterval(loadData, 60000);
-
-    // Init
-    loadCurrencies().then(loadData);
+    loadCurrencies().then(loadCoins);
   </script>
 </body>
 </html>
